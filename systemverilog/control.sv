@@ -13,6 +13,7 @@ typedef enum logic [1:0] {idle, hold, write} State;
 State curState = idle;
 State nextState;
 integer byteCount = 0;
+logic [31:0] tempData;
 
 always_ff @(posedge clk) begin
 	if(reset)	curState <= idle;
@@ -61,7 +62,7 @@ always_ff @(posedge clk) begin
 end
 
 assign ready = (inByte == 8'd255 || byteCount == 8);
-
+assign outData = (byteCount == 8) ? tempData : 32'bx;
 endmodule
 
 	
