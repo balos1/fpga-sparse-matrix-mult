@@ -9,7 +9,7 @@ vmap work rtl_work
 ### Enter files here; copy line for multiple files ###
 vlog -sv -work work [pwd]/testPIC.sv
 vlog -sv -work work -suppress 7061 [pwd]/PIC.sv
-vlog -sv -work work [pwd]/control.sv
+vlog -sv -work work [pwd]/controlPIC.sv
 
 ### ---------------------------------------------- ###
 ### Load design for simulation ###
