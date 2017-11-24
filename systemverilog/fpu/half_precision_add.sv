@@ -21,6 +21,7 @@
         sum - A + B
         n - indicates negative sum
         v - indicates overflow
+        u - indicates underflow
         z - indicates sum == 0
 */
 module half_precision_add(input logic clk, start
@@ -39,13 +40,6 @@ module half_precision_add(input logic clk, start
     statetype current_state = IDLE;
     statetype next_state = IDLE;
 
-    logic [15:0] A, B;
-    logic Aneg, Bneg, sumneg;
-    logic [4:0] Aexp, Bexp, sumexp;
-    logic [9:0] Asig, Bsig;
-    logic [11:0] sumsig;
-    logic [4:0] diff;
-
     // Determine the next state based on current state and ready signal
     always_comb
     begin
@@ -57,6 +51,13 @@ module half_precision_add(input logic clk, start
             default: next_state = IDLE;
         endcase
     end
+
+    logic [15:0] A, B;
+    logic Aneg, Bneg, sumneg;
+    logic [4:0] Aexp, Bexp, sumexp;
+    logic [9:0] Asig, Bsig;
+    logic [11:0] sumsig;
+    logic [4:0] diff;
 
     // Determine the output of the system in the current state and based on the inputs (Mealy FSM)
     assign ready = current_state == IDLE;
