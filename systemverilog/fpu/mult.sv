@@ -25,9 +25,9 @@
         zero - indicates result == 0
 */
 module mult(input logic clock, clk_en,
-             input logic [15:0] dataa, datab,
-             output logic [15:0] result,
-             output logic sign, overflow, underflow, zero, nan);
+            input logic [15:0] dataa, datab,
+            output logic [15:0] result,
+            output logic sign, overflow, underflow, zero, nan);
 
     // Breaking adder into 7/8 different stages
     // Using a Mealy FSM to determine determine stage
