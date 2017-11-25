@@ -23,13 +23,12 @@ module testMult();
 
         // DUT signals
         logic clk = 0;
-        logic reset = 0;
+        logic reset = 1;
         logic clk_en = 0;
         logic [15:0] dataa = 0;
         logic [15:0] datab = 0;
         logic [15:0] result = 0;
         logic [7:0] flags = 0;
-        logic sign = 0;
         logic overflow = 0;
         logic underflow = 0;
         logic nan = 0;
@@ -38,11 +37,11 @@ module testMult();
         mult dut
         (
             .clock(clk),
+            .reset(reset),
             .clk_en(clk_en),
             .dataa(dataa),
             .datab(datab),
             .result(result),
-            .sign(sign),
             .overflow(overflow),
             .underflow(underflow),
             .nan(nan)
@@ -60,18 +59,14 @@ module testMult();
         // tasks for testing
         task verify();
             flags = {3'b0, nan, testvec_flags[3], overflow, underflow, testvec_flags[0]};
-
-            if ((result[15:0] == testvec_result) && (flags == testvec_flags))
+            if ((result[15:0] != testvec_result) || (flags != testvec_flags)) begin
+                $display("FAIL 0x%h * 0x%h", testvec_dataa, testvec_datab);
+                $display("\texpected: result = %h, NaN = %b, overflow = %b, underflow = %b",
+                    testvec_result, testvec_flags[4], testvec_flags[2], testvec_flags[1]);
+                $display("\t but got: result = %h, NaN = %b, overflow = %b, underflow = %b",
+                    result, nan, overflow, underflow);
+            end else begin
                 numPass++;
-
-            assert((result[15:0] == testvec_result)) $display("PASS 0x%h * 0x%h = 0x%h", dataa, datab, result);
-            else begin
-                $error("FAIL 0x%h * 0x%h = 0x%h not 0x%h", testvec_dataa, testvec_datab, testvec_result, result);
-            end
-
-            assert((flags == testvec_flags)) $display("PASS 0x%h * 0x%h --> NaN = %b v = %b, u = %b", dataa, datab, nan, overflow, underflow);
-            else begin
-                $error("FAIL 0x%h * 0x%h ... wrong flags", testvec_dataa, testvec_datab);
             end
         endtask
 
@@ -83,22 +78,25 @@ module testMult();
         begin
             $readmemh(testFileName, testVector);
 
+            reset <= 0;
+            #(clock_period) reset <= 1;
+
             // assign signals and check result
             for (int i = 0; i < numTests; i++)
             begin
                 // select a random test to do
                 random_test = $urandom() % (numTests-1);
                 // unpack the test
-                {testvec_clk_en, testvec_dataa, testvec_datab, testvec_result, testvec_flags} = testVector[i];
+                {testvec_clk_en, testvec_dataa, testvec_datab, testvec_result, testvec_flags} = testVector[random_test];
                 // make DUT signal assignments
-                clk_en = testvec_clk_en[59];
+                clk_en = testvec_clk_en;
                 dataa = testvec_dataa;
                 datab = testvec_datab;
                 // wait until result will be ready to verify
                 #(clock_period*latency) verify();
-                // randomly delay some amount of time
-                random_delay = $urandom() % 250;
-                #(random_delay);
+                // randomly delay some amount of time but at least 1/2 clock period
+                random_delay = $urandom() % (4*clock_period);
+                #(clock_period/2 + random_delay);
             end
 
             #10 $display("Test Bench Complete: %0d out of %0d passed\n", numPass, numTests);

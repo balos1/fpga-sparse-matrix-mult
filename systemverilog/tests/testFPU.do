@@ -21,11 +21,12 @@ if "$condSigA==0" {
 
 # Run simulation and plot
 add wave -label clk {clk}
+add wave -label reset {reset}
+add wave -label clk_en {clk_en}
 add wave -radix hex -label A {dataa}
 add wave -radix hex -label B {datab}
 add wave -radix hex -label Y {result}
 add wave -label NaN {nan}
-add wave -label sign {sign}
 add wave -label overflow {overflow}
 add wave -label underflow {underflow}
 
