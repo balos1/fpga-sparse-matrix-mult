@@ -18,26 +18,25 @@
         dataa - left operand
         datab - right operand
     outputs:
-        result - A + B
+        result - A * B
         sign - indicates negative result
         overflow - indicates overflow
         underflow - indicates underflow
-        zero - indicates result == 0
 */
 module mult(input logic clock, clk_en,
             input logic [15:0] dataa, datab,
             output logic [15:0] result,
-            output logic sign, overflow, underflow, zero, nan);
+            output logic sign, overflow, underflow, nan);
 
-    // Breaking adder into 7/8 different stages
+    // Breaking adder into 8 different stages
     // Using a Mealy FSM to determine determine stage
-    typedef enum logic [3:0]
+    typedef enum logic [7:0]
     {
         IDLE, STAGE0, STAGE1, STAGE2, STAGE3, STAGE4, STAGE5, STAGE6
     } statetype;
 
-    statetype current_state = IDLE;
     statetype next_state = IDLE;
+    statetype current_state = IDLE;
 
     // Determine the next state based on current state
     always_comb
@@ -66,6 +65,7 @@ module mult(input logic clock, clk_en,
     begin
         case(current_state)
             IDLE: begin
+                // cover all outputs and intermediates
                 if (clk_en) begin
                     // Unpack operands
                     a_sin <= dataa[`sign]; b_sin <= datab[`sign];
@@ -187,13 +187,17 @@ module mult(input logic clock, clk_en,
             end
             default: begin
                 // cover all outputs and intermediates
+                result <= 0;  overflow <= 0; underflow <= 0; nan <= 0;
+                a_sin <= 0; b_sin <= 0; result_sin <= 0;
+                a_exp <= 0; b_exp <= 0; result_exp <= 0;
+                a_man <= 0; b_man <= 0; result_man <= 0;
+                man_product <= 0; guard <= 0; sticky <= 0; round <= 0;
             end
         endcase
     end
 
     // zero flag is much easier to determine combinationally
-	 assign sign = result[`sign];
-    assign zero = (result[`exponent] == 0) && (result[`mantissa] == 0);
+	assign sign = result[`sign];
 
     // Go to the next state
     always_ff @(posedge clock)

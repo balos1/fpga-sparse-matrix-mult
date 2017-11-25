@@ -27,11 +27,11 @@
 module adder(input logic clock, clk_en,
              input logic [15:0] dataa, datab,
              output logic [15:0] result,
-             output logic sign, overflow, underflow, zero);
+             output logic sign, overflow, underflow);
 
-    // Breaking adder into 3 different stages
+    // Breaking adder into 4 different stages
     // Using a Mealy FSM to determine determine stage
-    typedef enum logic [3:0]
+    typedef enum logic [1:0]
     {
         IDLE, STAGE1, STAGE2, STAGE3
     } statetype;
@@ -114,7 +114,7 @@ module adder(input logic clock, clk_en,
                     // CASE: Overflow
                     sumexp <= Aexp + 1;
                     sumsig <= sumsig >> 1;
-                    underflow <= 0; overflow <= 1; zero <= 0;
+                    underflow <= 0; overflow <= 1;
                 end else if (sumsig) begin
                     // CASE: result is nonzero and did not overflow
 
@@ -129,22 +129,22 @@ module adder(input logic clock, clk_en,
                     if (Aexp < adjust) begin
                         // SUBCASE: Underflow, so set all to zero
                         sumneg <= 0; sumexp <= 0; sumsig <= 0;
-                        underflow <= 1; overflow <= 0; zero <= 1;
+                        underflow <= 1; overflow <= 0;
                     end else begin
                         sumexp <= Aexp - adjust;
                         sumsig <= sumsig << adjust;
-                        underflow <= 0; overflow <= 1; zero <= 0;
+                        underflow <= 0; overflow <= 1;
                     end
                 end else begin
                     // CASE: result is zero
                     sumexp <= 0;
                     sumsig <= 0;
-                    underflow <= 0; overflow <= 0; zero <= 1;
+                    underflow <= 0; overflow <= 0;
                 end
             end
             default: begin
                 // cover all outputs and intermediates
-                result <= 0; sign <= 0; overflow <= 0; underflow <= 0; zero <= 0;
+                overflow <= 0; underflow <= 0;
                 A <= 0; B <= 0; Aneg <= 0; Bneg <= 0; Aexp <= 0; Bexp <= 0; Asig <= 0; Bsig <= 0;
                 sumneg <= 0; sumexp <= 0; sumsig <= 0; diff <= 0;
             end

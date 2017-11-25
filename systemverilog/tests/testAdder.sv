@@ -1,5 +1,5 @@
 /*
-    file: testMult.sv
+    file: testAdder.sv
     author: Cody Balos <cjbalos@gmail.com>
 */
 
@@ -7,11 +7,11 @@
 `timescale 1ns/1ns
 
 /*
-        module: testMult
+        module: testAdder
 
         Verification test bench for half-precision multiplier.
 */
-module testMult();
+module testAdder();
     	// Define parameters when calling from do file
         parameter clock_period = 50;
         parameter latency = 8;
@@ -35,7 +35,7 @@ module testMult();
         logic nan = 0;
 
         // device under test declaration
-        mult dut
+        adder dut
         (
             .clock(clk),
             .clk_en(clk_en),
@@ -44,8 +44,7 @@ module testMult();
             .result(result),
             .sign(sign),
             .overflow(overflow),
-            .underflow(underflow),
-            .nan(nan)
+            .underflow(underflow)
         );
 
         // test vector and unpacked test vector signals
@@ -59,19 +58,19 @@ module testMult();
 
         // tasks for testing
         task verify();
-            flags = {3'b0, nan, testvec_flags[3], overflow, underflow, testvec_flags[0]};
+            flags = {3'b0, testvec_flags[4], testvec_flags[3], overflow, underflow, testvec_flags[0]};
 
             if ((result[15:0] == testvec_result) && (flags == testvec_flags))
                 numPass++;
 
-            assert((result[15:0] == testvec_result)) $display("PASS 0x%h * 0x%h = 0x%h", dataa, datab, result);
+            assert((result[15:0] == testvec_result)) $display("PASS 0x%h + 0x%h = 0x%h", dataa, datab, result);
             else begin
-                $error("FAIL 0x%h * 0x%h = 0x%h not 0x%h", testvec_dataa, testvec_datab, testvec_result, result);
+                $error("FAIL 0x%h + 0x%h = 0x%h not 0x%h", testvec_dataa, testvec_datab, testvec_result, result);
             end
 
-            assert((flags == testvec_flags)) $display("PASS 0x%h * 0x%h --> NaN = %b v = %b, u = %b", dataa, datab, nan, overflow, underflow);
+            assert((flags == testvec_flags)) $display("PASS 0x%h + 0x%h --> NaN = %b v = %b, u = %b", dataa, datab, nan, overflow, underflow);
             else begin
-                $error("FAIL 0x%h * 0x%h ... wrong flags", testvec_dataa, testvec_datab);
+                $error("FAIL 0x%h + 0x%h ... wrong flags", testvec_dataa, testvec_datab);
             end
         endtask
 
@@ -101,7 +100,7 @@ module testMult();
                 #(random_delay);
             end
 
-            #10 $display("Test Bench Complete: %0d out of %0d passed\n", numPass, numTests);
+            #10 $display("Test Bench Complete: %0d/%0d passed\n", numPass, numTests);
         end
 
  endmodule
