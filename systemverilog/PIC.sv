@@ -20,7 +20,7 @@ module PIC (input logic clk,
 	
 	assign eq= (A0==B0);
 	
-	control m1(.clk(clk), .waddr(waddr), .raddr(raddr)); //control unit for read/write addresses
+	controlPIC m1(.clk(clk), .waddr(waddr), .raddr(raddr)); //control unit for read/write addresses
 	
 	always_ff @(posedge clk) begin	
 		if(eq) begin
