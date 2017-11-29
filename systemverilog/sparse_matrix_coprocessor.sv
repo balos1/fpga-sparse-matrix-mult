@@ -2,24 +2,22 @@ module sparse_matrix_coprocessor(
 	input logic clk,
 	
 );
-
-controlPIC ctl1(
-//module controlPIC (input logic clk, en, rw, reset,
-//				output logic [3:0] raddr, waddr,
-//				output logic wen, full, empty);
-
+comm c(
+//	input logic clk, reset, wen,
+//	input logic RxD,
+//	input logic TxD_start,
+//	output logic TxD,
+//	output logic TxD_busy
 	.clk(clk),
-	.en(en),
-	.rw(rw),
-	.reset(reset),
-	.raddr(raddr),
-	.waddr(waddr),
-	.wen(wen),
-	.full(full),
-	.empty(empty)
+	.reset(),
+	.wen(),
+	.RxD(),
+	.TxD_start(),
+	.TxD(),
+	.TxD_busy()
 );
 
-PIC pic(
+PIC p(
 //module PIC (input logic clk,
 //				input logic [2:0] A0, B0, //data and index
 //				output logic eq,
@@ -28,7 +26,7 @@ PIC pic(
 	.A0(),
 	.B0(),
 	.eq(eq),
-	.dataOut(dataOut)
+	.dataOut()
 );
 
 fpu/mult m(
@@ -75,7 +73,9 @@ fpu/adder add(
 	.datab(),
 	.result(),
 	.overflow(),
-	.underflow(),
+	.underflow()
 );
+
+endmodule 
 
 
