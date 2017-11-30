@@ -32,53 +32,39 @@ PIC p1( 	//should have multiple of these
 	.dataOut()
 );
 
-//fpu/mult m(
-////	module mult(input logic clock, reset, clk_en,
-////            input logic [15:0] dataa, datab,
-////            output logic [15:0] result,
-////            output logic overflow, underflow, nan);
-//	.clock(clk),
-//	.reset(),
-//	.clk_en(),
-//	.dataa(),
-//	.datab(),
-//	.result(),
-//	.overflow(),
-//	.underflow(),
-//	.nan()
-//);
-//
-//
-//fpu/adder add(
-////	module adder(input logic clock, reset, clk_en,
-////             input logic [15:0] dataa, datab,
-////             output logic [15:0] result,
-////             output logic overflow, underflow);
-//	.clock(clk),
-//	.reset(),
-//	.clk_en(),
-//	.dataa(),
-//	.datab(),
-//	.result(),
-//	.overflow(),
-//	.underflow()
-//);
-
-fpu/fpu f(  
-//	module fpu(input logic clk, clk_en,
-//				  input logic [15:0] dataa, datab,
-//				  output logic [15:0] result,
-//				  output logic sign, overflow, underflow, zero, nan); //implements both adder and mult?
-	.clk(clk),
-	.clk_en(en),
+mult m(
+//	module mult(input logic clock, reset, clk_en,
+//            input logic [15:0] dataa, datab,
+//            output logic [15:0] result,
+//            output logic overflow, underflow, nan);
+	.clock(clk),
+	.reset(),
+	.clk_en(),
 	.dataa(),
 	.datab(),
-	.result(result),
-	.overflow(overflow),
-	.underflow(underflow),
-	.zero(zero),
-	.nan(nan)
+	.result(),
+	.overflow(),
+	.underflow(),
+	.nan()
 );
+
+
+adder add(
+//	module adder(input logic clock, reset, clk_en,
+//             input logic [15:0] dataa, datab,
+//             output logic [15:0] result,
+//             output logic overflow, underflow);
+	.clock(clk),
+	.reset(),
+	.clk_en(),
+	.dataa(),
+	.datab(),
+	.result(),
+	.overflow(),
+	.underflow()
+);
+
+
 
 endmodule 
 
