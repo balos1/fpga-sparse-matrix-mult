@@ -52,4 +52,4 @@ module comm(
 	);
 	
 
-endmodule;
+endmodule
