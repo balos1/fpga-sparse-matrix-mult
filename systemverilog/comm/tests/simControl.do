@@ -7,14 +7,13 @@ vmap work rtl_work
 ### ---------------------------------------------- ###
 ### Compile code ###
 ### Enter files here; copy line for multiple files ###
-vlog -sv -work work [pwd]/testTx.sv
-vlog -sv -work work [pwd]/async_transmitter.sv
-vlog -sv -work work [pwd]/BaudTickGen.sv
+vlog -sv -work work ../control.sv
+vlog -sv -work work testControl.sv
 ### ---------------------------------------------- ###
 ### Load design for simulation ###
 ### Replace topLevelModule with the name of your top level module (no .sv) ###
 ### Do not duplicate! ###
-vsim testTx
+vsim testControl
 
 ### ---------------------------------------------- ###
 ### Add waves here ###

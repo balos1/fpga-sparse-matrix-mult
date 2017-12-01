@@ -16,6 +16,7 @@ import time
 from threading import Thread
 
 PORT = 'loop://'
+WINPORT = '\\.\COM1'
 TIMEOUT = 100
 
 # ser = serial.serial_for_url(PORT, timeout=TIMEOUT)

@@ -9,12 +9,12 @@ module control(input logic clk, reset, wen, dataReady,
 					output logic [15:0] writePtr,
 					output logic [15:0] readPtr,
 					output logic [7:0] outData);
+
 parameter number_of_bytes = 16;
 integer byteCounter = 0;
 typedef enum logic [3:0] {idle, writing, writeReady, zero, hold, read} State;
 State curState = idle;
 State nextState;
-
 
 always_ff @(posedge clk) begin
 	if(reset) begin
