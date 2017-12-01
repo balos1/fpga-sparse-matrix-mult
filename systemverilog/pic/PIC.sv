@@ -12,12 +12,12 @@ module PIC (input logic clk,
 				output logic [31:0]dataOut); //indices from fifo
 	
 	parameter fifoEntries = 4;			
-	logic [32:0] fifo [fifoEntries-1:0];
+	logic [31:0] fifo [fifoEntries-1:0];
 	integer i;
 			
 	initial begin //initialize fifo
 		for(i=0; i<fifoEntries; i++)
-			fifo[i]=i[32:0];
+			fifo[i]=i[31:0];
 	end
 	
 	
