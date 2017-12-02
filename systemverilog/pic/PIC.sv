@@ -1,38 +1,18 @@
 /* Independent Parallel Indices Comparison Unit
-	output high if indices are equal
-	store indices in fifo
-	
-	indices from A are stored in fifo [32:16]
-	indices from B are stored in fifo [15:0]
 */
 
-module PIC (input logic clk,
-				input logic [16:0] A0, B0,
-				output logic eq,
-				output logic [31:0]dataOut); //indices from fifo
-	
-	parameter fifoEntries = 4;			
-	logic [31:0] fifo [fifoEntries-1:0];
-	integer i;
-			
-	initial begin //initialize fifo
-		for(i=0; i<fifoEntries; i++)
-			fifo[i]=i[31:0];
-	end
-	
-	
-	assign eq= (A0==B0);
-	
-	controlPIC m1(.clk(clk), .waddr(waddr), .raddr(raddr)); //control unit for read/write addresses
-	
-	always_ff @(posedge clk) begin	
-		if(eq) begin
-			fifo[waddr]<={A0, B0}; //store indices if equal
-			dataOut<=fifo[raddr];
-		end
-		
-		else 
-			dataOut<=fifo[raddr];
-	end
+module PIC (
+	input logic clk,
+	input logic [15:0] A0, B0,
+	input logic write, read, 
+	output logic [31:0]fifo_Out
+);
+	//w_en = write (from external control) & eq (from compare)
+	//r_en = read (from fpu)
+	logic [31:0]comp_Out;			
+
+	compare m1(.A0(A0), .B0(B0), .eq(eq), .dataOut(comp_Out));
+	controlPIC m2(.clk(clk), .w_en(write & eq), .r_en(r_en), .waddr(waddr), .raddr(raddr));
+	fifo m3(.clk(clk), .w_en(write & eq), .waddr(waddr), .raddr(raddr), .dataIn(comp_Out), .dataOut(fifo_Out));
 
 endmodule

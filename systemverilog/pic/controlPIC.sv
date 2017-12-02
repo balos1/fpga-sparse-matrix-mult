@@ -1,8 +1,10 @@
-module controlPIC (input logic clk, en, rw, reset,
-				output logic [3:0] raddr, waddr,
-				output logic wen, full, empty);
+module controlPIC (
+	input logic clk, w_en, r_en,
+	output logic [3:0] raddr, waddr,
+	output logic full, empty
+);
 
-	typedef enum logic [1:0] {idle, read, write, hold} statetypes;
+	typedef enum logic [1:0] {idle, read, write} statetypes;
 	statetypes currentState=idle, nextState;
 			
 	always_ff @(posedge clk)
@@ -14,27 +16,26 @@ module controlPIC (input logic clk, en, rw, reset,
 	begin
 		case(currentState)
 				idle:	begin
-				  if(!rw && en)
+				  if(r_en)
 					nextState <= read;
-				  else if (rw && en)
+				  else if (w_en)
 					nextState <=write;
 				  else
 					nextState <= idle;
 				end
 				
-				read: 
-					nextState <= hold;
-				
-				write:
-					nextState <=hold;
-				
-				hold: begin
-					if(!rw && en && !empty)
+				read:	begin
+				  if(r_en)
 					nextState <= read;
-				  else if (rw && en && !full)
+				  else
+					nextState <= idle;
+				end
+				
+				write: begin
+				  if (w_en)
 					nextState <=write;
 				  else
-					nextState <= hold;
+					nextState <= idle;
 				end
 				
 				default:
@@ -45,10 +46,6 @@ module controlPIC (input logic clk, en, rw, reset,
 		
 	always_ff @(posedge clk)
 	begin
-		if(reset==1'b1) begin
-			raddr = 4'b0000;
-			waddr = 4'b0000;
-		end
 		case(currentState)
 				idle:begin
 					waddr <= 4'b0000; //pointers set to beginning
@@ -57,7 +54,6 @@ module controlPIC (input logic clk, en, rw, reset,
 				read:
 					raddr <= raddr + 4'b0001;//increment read addr
 				write:begin
-				//	wen <= 1'b1;
 					waddr <= waddr + 4'b0001;//increment write addr
 				end
 		endcase
@@ -65,7 +61,6 @@ module controlPIC (input logic clk, en, rw, reset,
 	
 	assign empty = (raddr == waddr);
 	assign full = ((raddr[3] != waddr[3]) && (raddr[2:0] == waddr [2:0]));
-	assign wen = (currentState == write);
 
 endmodule
 
