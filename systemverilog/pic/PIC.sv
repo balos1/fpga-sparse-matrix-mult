@@ -1,20 +1,23 @@
 /* Independent Parallel Indices Comparison Unit
 	output high if indices are equal
 	store indices in fifo
+	
+	indices from A are stored in fifo [32:16]
+	indices from B are stored in fifo [15:0]
 */
 
 module PIC (input logic clk,
-				input logic [2:0] A0, B0,
+				input logic [16:0] A0, B0,
 				output logic eq,
-				output logic [5:0]dataOut); //indices from fifo
+				output logic [31:0]dataOut); //indices from fifo
 	
-				
-	logic [15:0] fifo [1:0];
+	parameter fifoEntries = 4;			
+	logic [31:0] fifo [fifoEntries-1:0];
 	integer i;
 			
 	initial begin //initialize fifo
-		for(i=0; i<2; i++)
-			fifo[i]=i[15:0];
+		for(i=0; i<fifoEntries; i++)
+			fifo[i]=i[31:0];
 	end
 	
 	
