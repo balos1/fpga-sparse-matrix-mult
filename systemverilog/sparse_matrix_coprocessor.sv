@@ -1,4 +1,5 @@
-module sparse_matrix_coprocessor(
+module sparse_matrix_coprocessor
+(
 	input logic clk, reset, wen,
 	input logic RxD,
 	output logic TxD,
@@ -7,17 +8,18 @@ module sparse_matrix_coprocessor(
 );
 
 
-logic TxD_start, TxD_busy;
+	logic TxD_start, TxD_busy;
 
-comm c(
-	.clk(clk),
-	.reset(reset), 
-	.wen(wen),
-	.RxD(RxD),
-	.TxD_start(TxD_start),
-	.TxD(TxD),
-	.TxD_busy(TxD_busy)
-);
+	comm c
+	(
+		.clk(clk),
+		.reset(reset), 
+		.wen(wen),
+		.RxD(RxD),
+		.TxD_start(TxD_start),
+		.TxD(TxD),
+		.TxD_busy(TxD_busy)
+	);
 
 // PIC p1( 	//should have multiple of these
 // 	.clk(clk),

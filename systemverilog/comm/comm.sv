@@ -1,47 +1,55 @@
 
 
 
-module comm(
-	input logic clk, reset, wen,
+module comm
+(
+	input logic clk, reset, load_data,
 	input logic RxD,
-	input logic TxD_start,
+	input logic device2host,
 	output logic TxD,
 	output logic TxD_busy
 );
 	
-	logic ready;
+	logic ready_for_mem;
 	logic RxD_data_ready;
 	logic [7:0] RxD_data;
 	logic [15:0] writePtr;
 	logic [15:0] readPtr;
-	logic [7:0] outData;
+	logic [7:0] wdata;
 
-
-	control ctl
+	control #(16) ctl
 	(
 		.clk(clk), 
 		.reset(reset),
-		.wen(wen),
-		.dataReady(RxD_data_ready),
-		.inByte(RxD_data),
-		.ready(ready),
+		.load_data(load_data),
+		.rx_ready(RxD_data_ready),
+		.rx_byte(RxD_data),
+		.ready_for_mem(ready_for_mem),
 		.writePtr(writePtr),
 		.readPtr(readPtr),
-		.outData(outData)
+		.wdata(wdata)
 	);
-	
-	
-	// INSTANTIATE BUFFER/MEM
 
-	async_transmitter #(50000000, 115200)
+	memory main
 	(
 		.clk(clk),
-		.TxD_start(TxD_start),
+		.reset(reset),
+		.wen(ready_for_mem),
+		.writePtr(writePtr),
+		.readPtr(readPtr),
+		.inData(wdata),
+		.outData(rdata)
+	);
+
+	async_transmitter #(50000000, 115200) transmiter
+	(
+		.clk(clk),
+		.TxD_start(device2host),
 		.TxD(TxD),
 		.TxD_busy(TxD_busy)
 	);
 	
-	async_receiver #(50000000, 115200, 16)
+	async_receiver #(50000000, 115200, 16) receiver
 	(
 		.clk(clk),
 		.RxD(RxD),
@@ -50,6 +58,5 @@ module comm(
 		.RxD_idle(),
 		.RxD_endofpacket()
 	);
-	
 
 endmodule
