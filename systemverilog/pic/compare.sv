@@ -6,9 +6,11 @@ module compare(
 );
 
 	always_ff @(posedge clk) begin
-		eq <= (A0 == B0);
-		if(eq)
+		if (A0 == B0) begin
+			eq <= 1'b1;
 			dataOut <= {A0, B0};
+		end
+		else
+			eq <= 1'b0;
 	end
 endmodule
-	
