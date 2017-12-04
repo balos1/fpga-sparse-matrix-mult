@@ -15,7 +15,7 @@ module memory(
 	input logic [7:0] inData,
 	output logic [127:0] outData
 );
-	parameter entries = 128;
+	parameter entries = 64;
 						 
 	logic [entries-1:0] ram [15:0];
 
