@@ -12,12 +12,12 @@
 module memory(
 	input logic clk, reset, wen,
 	input logic [15:0] writePtr, readPtr,
-	input logic [127:0] inData,
-	output logic [127:0] outData
+	input logic [7:0] inData,
+	output logic [63:0] outData
 );
-	parameter entries = 16;
+	parameter entries = 64;
 
-	logic [127:0] ram [entries-1:0];
+	logic [entries-1:0] ram [15:0];
 
 	always_ff @(posedge clk or posedge reset) begin
 		if (reset) begin
