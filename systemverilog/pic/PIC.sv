@@ -11,6 +11,7 @@ module PIC (
 	//r_en = read (from fpu)
 	logic [31:0]comp_Out;
 	logic equal;
+	logic [3:0] waddr, raddr;
 
 	compare m1(.clk(clk), .A0(A0), .B0(B0), .eq(equal), .dataOut(comp_Out));
 	controlPIC m2(.clk(clk), .w_en(write & equal), .r_en(r_en), .waddr(waddr), .raddr(raddr));
