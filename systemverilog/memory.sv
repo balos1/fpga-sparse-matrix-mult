@@ -13,7 +13,7 @@ module memory(
 	input logic clk, reset, wen,
 	input logic [15:0] writePtr, readPtr,
 	input logic [7:0] inData,
-	output logic [127:0] outData
+	output logic [63:0] outData
 );
 	parameter entries = 64;
 						 
