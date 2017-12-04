@@ -13,102 +13,90 @@
 		ready_for_mem - data that was ready is ready to be written to memory
 
 */
-module control(
-	input logic clk, reset, load_data, rx_ready, 
-	input logic [7:0] rx_byte, 
-	output logic ready_for_mem,
-	output logic [15:0] writePtr,
-	output logic [15:0] readPtr,
-	output logic [7:0] wdata
-);
-
-parameter number_of_bytes = 16;
-
+module control(input logic clk, reset, wen, dataReady, 
+	       input logic [7:0] inByte, 
+	       output logic ready,
+	       output logic [15:0] writePtr,
+	       output logic [15:0] readPtr,
+	       output logic [7:0] outData);
+parameter number_of_bytes = 8;
 integer byteCounter = 0;
-typedef enum logic [3:0] {idle, writing, writeReady, zero, hold, read} State;
+typedef enum logic [2:0] {idle, writing, writeReady, hold, read} State;
 State curState = idle;
 State nextState;
 
-always_ff @(posedge clk or posedge reset) begin
+
+always_ff @(posedge clk) begin
 	if(reset) begin
 		curState <= idle;
 	end
-	else begin
-		curState <= nextState;
-	end
+	
+	else	curState <= nextState;
 end
 
 
 always_comb begin
 	case(curState)
-		idle:			if(load_data && rx_ready && rx_byte != 0)
+		idle:			if(wen && dataReady && inByte != 0)
 							nextState = writing;
-						else if(load_data && rx_ready && rx_byte == 0)
-							nextState = zero;
-						else if (!load_data)
+						else if(wen && dataReady && inByte == 0)
+							nextState = writeReady;
+						else if (!wen)
 							nextState = read;
 						else
 							nextState = idle;
 		
-		writing:		if(byteCounter < number_of_bytes && rx_ready)
+		writing:		if(byteCounter < number_of_bytes && dataReady)
 							nextState = writing;
-						else if(byteCounter == number_of_bytes)
+						else if(byteCounter == number_of_bytes || inByte == 0)
 							nextState = writeReady;
 						else
 							nextState = hold;
 
-		writeReady:	nextState = hold;
-
-		hold:			if(load_data && rx_ready && rx_byte != 0)
+		writeReady:		nextState = hold;
+		
+		hold:			if(wen && dataReady && inByte != 0)
 							nextState = writing;
-						else if(!load_data)
+						else if(!wen)
 							nextState = read;
+						else if(inByte == 0)
+							nextState = writeReady;
 						else
 							nextState = hold;
 						
-		read:		nextState = hold;
+		read:			nextState = hold;
 		
-		zero:		if(rx_byte == 0)
-						nextState = zero;
-					else
-						nextState = writing;
-		
-		default:	nextState = hold;
+		default:		nextState = hold;
 	endcase
 end
 
 
 always_ff @(posedge clk) begin
 	case(curState)
-			idle: begin			
-				writePtr <= 0;
-				readPtr <= 0;
-			end
+			idle:		begin			
+						writePtr <= 0;
+						readPtr <= 0;
+					end
 			writeReady:	begin
-				writePtr <= writePtr + 1;
-				//byteCounter <= 0;
-			end			
-			read: readPtr <= readPtr + 1;
+						writePtr <= writePtr + 1;
+								//byteCounter <= 0;
+						byteCounter <= 0;
+					end
+							
+			read:			readPtr <= readPtr + 1;
+			
+			writing:		byteCounter <= byteCounter + 1;
 	endcase
 end
 
 always_ff @(posedge clk) begin
-	if (curState == writing)
-		byteCounter <= byteCounter + 1;
-	else if(rx_byte == 0)
-		byteCounter <= number_of_bytes;
-	else if(curState == writeReady)
-		byteCounter <= 0;
-end
-	
-always_ff @(posedge clk) begin
 	if(curState == writing) begin
-		ready_for_mem <= 1'b1;
-		wdata <= rx_byte;
+		ready <= 1'b1;
+		outData <= inByte;
 	end
 	else begin
-		ready_for_mem = 1'b0;
-		wdata <= 8'bX;
+		ready = 1'b0;
+		outData <= 8'bX;
 	end
 end
 
