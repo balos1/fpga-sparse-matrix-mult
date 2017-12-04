@@ -36,7 +36,7 @@ add wave tx_complete
 add wave -radix hex tx_data
 add wave busy
 #add wave dut/*
-#add wave dut/RX0/*
+add wave dut/TX0/*
 add wave dut/ctl/curState
 # add wave dut/ctl/nextState
 #add wave -radix bin dut/ctl/rx_ready

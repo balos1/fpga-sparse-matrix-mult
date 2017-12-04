@@ -46,7 +46,7 @@ module comm_controller #(
 typedef enum logic [4:0] {
 	 IDLE,
 	 READHEADER, READVALUES, READINDICES, HOLD, LOAD, DAV,
-	 WRITEDAV, WRITELOAD, WRITEHOLD, WRITECOMPLETE
+	 WRITELOAD, WRITEHOLD, WRITE, WRITEDONE
 } State;
 
 State curState = IDLE;
@@ -74,7 +74,7 @@ always_comb begin
 			if (!op && rx_ready) begin
 				nextState = READHEADER;
 			end else if (op && tx_ready) begin
-				nextState = WRITEDAV;
+				nextState = WRITELOAD;
 			end else begin
 				nextState = IDLE;
 			end
@@ -117,22 +117,23 @@ always_comb begin
 		DAV: begin
 			nextState = IDLE;
 		end
-		WRITEDAV: begin
-			nextState = WRITELOAD;
-		end
 		WRITELOAD: begin
-			if (byte_count >= `END_INDICES)
-				nextState = WRITECOMPLETE;
-			else
-				nextState = WRITEHOLD; // for debuggin
+			nextState = WRITEHOLD;
 		end
 		WRITEHOLD: begin
-			if (tx_ready)
-				nextState = WRITEDAV;
-			else
-				nextState = WRITEHOLD;
+			nextState = WRITE;
 		end
-		WRITECOMPLETE: begin
+		WRITE: begin
+			if (!tx_ready) begin
+				nextState = WRITE;
+			end else begin
+				if (byte_count < (`DATA_WIDTH/8))
+					nextState = WRITELOAD;
+				else
+					nextState = WRITEDONE;
+			end
+		end
+		WRITEDONE: begin
 			nextState = IDLE;
 		end
 		default: begin
@@ -190,20 +191,23 @@ always_ff @(posedge clk or negedge resetn) begin
 			rx_complete <= 1;
 			busy <= 1;
 		end
-		WRITEDAV: begin
+		WRITELOAD: begin
 			size_of <= tx_data[`DATA_WIDTH-1 -: 8*HEADER];
 			tx_byte <= (tx_data[`DATA_WIDTH-1 -: 8] << byte_count);
-			busy <= 1;
-		end
-		WRITELOAD: begin
 			tx_start <= 1;
 			busy <= 1;
 		end
 		WRITEHOLD: begin
+			size_of <= size_of;
+			tx_byte <= tx_byte;
+			tx_start <= tx_start;
+			busy <= 1;
+		end
+		WRITE: begin
 			tx_start <= 0;
 			busy <= 1;
 		end
-		WRITECOMPLETE: begin
+		WRITEDONE: begin
 			tx_complete <= 1;
 			busy <= 1;
 		end
@@ -226,7 +230,7 @@ end
 always_ff @(posedge clk) begin
 	if (curState == READHEADER || curState == READVALUES || curState == READINDICES || curState == WRITELOAD)
 		byte_count <= byte_count + 1;
-	else if (curState == HOLD || curState == WRITEHOLD)
+	else if (curState == HOLD || curState == WRITE || curState == WRITEHOLD || curState == WRITEDONE)
 		byte_count <= byte_count;
 	else
 		byte_count <= 0;
