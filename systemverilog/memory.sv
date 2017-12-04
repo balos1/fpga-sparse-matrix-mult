@@ -2,7 +2,7 @@
 
 /*
 	module: memory
-	
+
 	Implements a memory module with M 16 bit entries.
 
 	inputs
@@ -12,17 +12,17 @@
 module memory(
 	input logic clk, reset, wen,
 	input logic [15:0] writePtr, readPtr,
-	input logic [7:0] inData,
+	input logic [127:0] inData,
 	output logic [127:0] outData
 );
-	parameter entries = 128;
-						 
-	logic [entries-1:0] ram [15:0];
+	parameter entries = 16;
+
+	logic [127:0] ram [entries-1:0];
 
 	always_ff @(posedge clk or posedge reset) begin
 		if (reset) begin
 			for (int i = 0; i < entries; i++)
-				ram[i] = 16'b0;
+				ram[i] = 128'b0;
 		end
 		if(wen) begin
 			ram[writePtr] <= {ram[writePtr], inData};
@@ -34,4 +34,4 @@ module memory(
 	end
 
 endmodule
-		
+

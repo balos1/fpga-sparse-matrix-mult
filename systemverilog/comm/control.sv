@@ -1,116 +1,235 @@
-/* 
-	module: control
+/*
+	module: comm_controller
+	author(s): Cody Balos <cjbalos@gmail.com>, Kelvin Hu
 
-	Control unit for the system. Collects 4 16-bits or a terminating 0. ready_for_mem signal will trigger
-    and send data to the memory unit.
+	Comm controller which handles receiving and transmitting a row/col of a matrix.
+	It is limited to a fixed matrix size provided as a parameter and every matrix
+	must have at least 1 entry per row/col.
 
+	parameters:
+		MATRIX_N - the size of the square matrix (in number of entries i.e. MATRIX_NxMATRIX_N matrix)
+		HEADER - the size of the header (in bytes)
 	inputs:
 		reset - async active high reset signal
-		load_data - when high system is to be ready tp load receive data and write it to memory
+		load_data - when high system is to be ready to load receive data and write it to memory
 		rx_ready - indicates RX data is available
 		rx_byte - the data received in a packet
 	outputs:
 		ready_for_mem - data that was ready is ready to be written to memory
-
 */
-module control(
-	input logic clk, reset, load_data, rx_ready, 
-	input logic [7:0] rx_byte, 
-	output logic ready_for_mem,
-	output logic [15:0] writePtr,
-	output logic [15:0] readPtr,
-	output logic [7:0] wdata
+
+// width of one data, which is one matrix row/col  (header + values + indices)
+`define DATA_WIDTH (HEADER*8 + 16*MATRIX_N + 16*MATRIX_N)
+`define END_VALUES (size_of + HEADER)
+`define END_INDICES (2*size_of + HEADER)
+
+module comm_controller #(
+	parameter MATRIX_N = 4,
+	parameter HEADER = 1
+)(
+	input logic clk,
+	input logic resetn,
+	input logic op,
+	input logic start,
+	input logic rx_ready,
+	input logic [7:0] rx_byte,
+	input logic [`DATA_WIDTH-1:0] tx_data,
+	input logic tx_ready,
+	output logic [7:0] tx_byte,
+	output logic tx_start,
+	output logic tx_complete,
+	output logic rx_complete,
+	output logic [`DATA_WIDTH-1:0] rx_data,
+	output logic busy
 );
 
-parameter number_of_bytes = 16;
+typedef enum logic [4:0] {
+	 IDLE,
+	 READHEADER, READVALUES, READINDICES, HOLD, LOAD, DAV,
+	 WRITEDAV, WRITELOAD, WRITEHOLD, WRITECOMPLETE
+} State;
 
-integer byteCounter = 0;
-typedef enum logic [3:0] {idle, writing, writeReady, zero, hold, read} State;
-State curState = idle;
+State curState = IDLE;
 State nextState;
 
-always_ff @(posedge clk or posedge reset) begin
-	if(reset) begin
-		curState <= idle;
-	end
-	else begin
+integer byte_count = 0;
+logic [(HEADER*8):0] size_of;
+logic [(16*MATRIX_N-1):0] rx_values_buffer, rx_indices_buffer;
+
+always_ff @(posedge clk or negedge resetn) begin
+	if(!resetn) begin
+		curState <= IDLE;
+	end else begin
 		curState <= nextState;
 	end
 end
 
-
+// determine next state
 always_comb begin
+	if (!resetn) begin
+		nextState = IDLE;
+	end else begin
 	case(curState)
-		idle:			if(load_data && rx_ready && rx_byte != 0)
-							nextState = writing;
-						else if(load_data && rx_ready && rx_byte == 0)
-							nextState = zero;
-						else if (!load_data)
-							nextState = read;
-						else
-							nextState = idle;
-		
-		writing:		if(byteCounter < number_of_bytes && rx_ready)
-							nextState = writing;
-						else if(byteCounter == number_of_bytes)
-							nextState = writeReady;
-						else
-							nextState = hold;
-
-		writeReady:	nextState = hold;
-
-		hold:			if(load_data && rx_ready && rx_byte != 0)
-							nextState = writing;
-						else if(!load_data)
-							nextState = read;
-						else
-							nextState = hold;
-						
-		read:		nextState = hold;
-		
-		zero:		if(rx_byte == 0)
-						nextState = zero;
-					else
-						nextState = writing;
-		
-		default:	nextState = hold;
-	endcase
-end
-
-
-always_ff @(posedge clk) begin
-	case(curState)
-			idle: begin			
-				writePtr <= 0;
-				readPtr <= 0;
+		IDLE: begin
+			if (!op && rx_ready) begin
+				nextState = READHEADER;
+			end else if (op && tx_ready) begin
+				nextState = WRITEDAV;
+			end else begin
+				nextState = IDLE;
 			end
-			writeReady:	begin
-				writePtr <= writePtr + 1;
-				//byteCounter <= 0;
-			end			
-			read: readPtr <= readPtr + 1;
+		end
+		READHEADER: begin
+			nextState = HOLD;
+		end
+		HOLD: begin
+			// If header has been read, then we can go to normal read step.
+			// If all bytes were read, then we can go to load step where rx_data is packed.
+			// Otherwise wait for the next byte.
+			case(rx_ready)
+				0: begin
+					if (byte_count == `END_INDICES)
+						nextState = LOAD;
+					else
+						nextState = HOLD;
+				end
+				1: begin
+					if (byte_count < HEADER)
+						nextState = READHEADER;
+					else if (byte_count >= HEADER && byte_count < `END_VALUES)
+						nextState = READVALUES;
+					else if (byte_count >= `END_VALUES && byte_count < `END_INDICES)
+						nextState = READINDICES;
+					else
+						nextState = IDLE; // for debuggin
+				end
+			endcase
+		end
+		READVALUES: begin
+			nextState = HOLD;
+		end
+		READINDICES: begin
+			nextState = HOLD;
+		end
+		LOAD: begin
+			nextState = DAV;
+		end
+		DAV: begin
+			nextState = IDLE;
+		end
+		WRITEDAV: begin
+			nextState = WRITELOAD;
+		end
+		WRITELOAD: begin
+			if (byte_count >= `END_INDICES)
+				nextState = WRITECOMPLETE;
+			else
+				nextState = WRITEHOLD; // for debuggin
+		end
+		WRITEHOLD: begin
+			if (tx_ready)
+				nextState = WRITEDAV;
+			else
+				nextState = WRITEHOLD;
+		end
+		WRITECOMPLETE: begin
+			nextState = IDLE;
+		end
+		default: begin
+			nextState = IDLE;
+		end
 	endcase
-end
-
-always_ff @(posedge clk) begin
-	if (curState == writing)
-		byteCounter <= byteCounter + 1;
-	else if(rx_byte == 0)
-		byteCounter <= number_of_bytes;
-	else if(curState == writeReady)
-		byteCounter <= 0;
-end
-	
-always_ff @(posedge clk) begin
-	if(curState == writing) begin
-		ready_for_mem <= 1'b1;
-		wdata <= rx_byte;
-	end
-	else begin
-		ready_for_mem = 1'b0;
-		wdata <= 8'bX;
 	end
 end
 
+// determine outputs
+always_ff @(posedge clk or negedge resetn) begin
+	if (!resetn) begin
+		curState <= IDLE;
+		tx_start <= 0;
+		tx_byte <= 0;
+		tx_complete <= 0;
+		rx_complete <= 0;
+		rx_data <= {(`DATA_WIDTH){1'b0}};
+		busy <= (tx_ready == 0);
+		rx_values_buffer <= {(16*MATRIX_N){1'b0}};
+		rx_indices_buffer <= {(16*MATRIX_N){1'b0}};
+		size_of <= {(HEADER*8){1'b0}};
+	end else begin
+	case(curState)
+		IDLE: begin
+			tx_start <= 0;
+			tx_complete <= 0;
+			rx_complete <= 0;
+			rx_data <= {(`DATA_WIDTH){1'b0}};
+			busy <= (tx_ready == 0);
+			rx_values_buffer <= {(16*MATRIX_N){1'b0}};
+			rx_indices_buffer <= {(16*MATRIX_N){1'b0}};
+			size_of <= {(HEADER*8){1'b0}};
+		end
+		READHEADER: begin
+			size_of <= {size_of, rx_byte};
+			busy <= 1;
+		end
+		HOLD: begin
+			busy <= 1;
+		end
+		READVALUES: begin
+			rx_values_buffer <= {rx_values_buffer, rx_byte};
+			busy <= 1;
+		end
+		READINDICES: begin
+			rx_indices_buffer <= {rx_indices_buffer, rx_byte};
+			busy <= 1;
+		end
+		LOAD: begin
+			rx_data <= {size_of, rx_values_buffer, rx_indices_buffer};
+			busy <= 1;
+		end
+		DAV: begin
+			rx_complete <= 1;
+			busy <= 1;
+		end
+		WRITEDAV: begin
+			size_of <= tx_data[`DATA_WIDTH-1 -: 8*HEADER];
+			tx_byte <= (tx_data[`DATA_WIDTH-1 -: 8] << byte_count);
+			busy <= 1;
+		end
+		WRITELOAD: begin
+			tx_start <= 1;
+			busy <= 1;
+		end
+		WRITEHOLD: begin
+			tx_start <= 0;
+			busy <= 1;
+		end
+		WRITECOMPLETE: begin
+			tx_complete <= 1;
+			busy <= 1;
+		end
+		default: begin
+			tx_start <= 0;
+			tx_complete <= 0;
+			rx_complete <= 0;
+			rx_data <= {(`DATA_WIDTH){1'b0}};
+			busy <= (tx_ready == 0);
+			rx_values_buffer <= {(16*MATRIX_N){1'b0}};
+			rx_indices_buffer <= {(16*MATRIX_N){1'b0}};
+			size_of <= {(HEADER*8){1'b0}};
+		end
+	endcase
+	end
+end
+
+
+// increment byte counter when read/write
+always_ff @(posedge clk) begin
+	if (curState == READHEADER || curState == READVALUES || curState == READINDICES || curState == WRITELOAD)
+		byte_count <= byte_count + 1;
+	else if (curState == HOLD || curState == WRITEHOLD)
+		byte_count <= byte_count;
+	else
+		byte_count <= 0;
+end
 
 endmodule
