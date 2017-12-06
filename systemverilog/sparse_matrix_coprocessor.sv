@@ -21,49 +21,31 @@ module sparse_matrix_coprocessor
 		.TxD_busy(TxD_busy)
 	);
 
-// PIC p1( 	//should have multiple of these
+// IPIC p(  
 // 	.clk(clk),
-// 	.A0(),
-// 	.B0(),
-// 	.eq(),
-// 	.dataOut()
+// 	.ready(),
+// 	.write(),
+// 	.read(),
+// 	.reset(),
+//		.row()
+//		.dataOut1(),
+//		.dataOut2(),
+//		.dataOut3(),
+//		.dataOut4(),
 // );
 
-//fpu/mult m(
-//	.clock(clk),
-//	.reset(),
-//	.clk_en(),
-//	.dataa(),
-//	.datab(),
-//	.result(),
-//	.overflow(),
-//	.underflow(),
-//	.nan()
-//);
-//
-//
-//fpu/adder add(
-//	.clock(clk),
-//	.reset(),
-//	.clk_en(),
-//	.dataa(),
-//	.datab(),
-//	.result(),
-//	.overflow(),
-//	.underflow()
-//);
 
-//fpu/fpu f(  
-//	.clk(clk),
-//	.clk_en(en),
-//	.dataa(),
-//	.datab(),
-//	.result(result),
-//	.overflow(overflow),
-//	.underflow(underflow),
-//	.zero(zero),
-//	.nan(nan)
-//);
+// fpu f(  
+//	 .clk(clk),
+//	 .clk_en(en),
+//	 .dataa(), //data at index from ipic
+//	 .datab(),
+//	 .result(result),
+//	 .overflow(overflow),
+//	 .underflow(underflow),
+//	 .zero(zero),
+//	 .nan(nan)
+// );
 
 endmodule 
 
