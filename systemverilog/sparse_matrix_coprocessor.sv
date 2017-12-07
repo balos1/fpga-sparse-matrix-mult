@@ -1,70 +1,46 @@
 module sparse_matrix_coprocessor
 (
-	input logic clk, reset, wen,
+	input logic clk,
+	input logic resetn, op, fpu_complete,
 	input logic RxD,
 	output logic TxD,
-	output logic [15:0] result,
-	output logic overflow, underflow, zero, nan
+	output logic [135:0] tx_data, 
+	output logic busy
 );
 
-
-	logic TxD_start, TxD_busy;
+	logic ren_clk;
 
 	comm c
 	(
 		.clk(clk),
-		.reset(reset), 
-		.wen(wen),
-		.RxD(RxD),
-		.TxD_start(TxD_start),
-		.TxD(TxD),
-		.TxD_busy(TxD_busy)
+		.resetn(resetn), 
+		.op(op),
+		.start(),
+		.rx(RxD),
+		.tx_data(tx_data),
+		.tx(TxD),
+		.tx_complete(tx_complete),
+		.rx_complete(rx_complete),
+		.rx_data(rx_data),
+		.regtxdata(),
+		.busy(busy)
 	);
 
-// PIC p1( 	//should have multiple of these
-// 	.clk(clk),
-// 	.A0(),
-// 	.B0(),
-// 	.eq(),
-// 	.dataOut()
-// );
+	memory mainmem
+	(
+		.clk(clk),
+		.resetn(resetn),
+		.wen(rx_complete),
+		.ren(ren_clk),
+		.inData(rx_data),
+		.outData(tx_data)
+	);
 
-//fpu/mult m(
-//	.clock(clk),
-//	.reset(),
-//	.clk_en(),
-//	.dataa(),
-//	.datab(),
-//	.result(),
-//	.overflow(),
-//	.underflow(),
-//	.nan()
-//);
-//
-//
-//fpu/adder add(
-//	.clock(clk),
-//	.reset(),
-//	.clk_en(),
-//	.dataa(),
-//	.datab(),
-//	.result(),
-//	.overflow(),
-//	.underflow()
-//);
-
-//fpu/fpu f(  
-//	.clk(clk),
-//	.clk_en(en),
-//	.dataa(),
-//	.datab(),
-//	.result(result),
-//	.overflow(overflow),
-//	.underflow(underflow),
-//	.zero(zero),
-//	.nan(nan)
-//);
+	fall_detect
+	(
+		.clk(clk),
+		.d(fpu_complete),
+		.q(ren_clk)
+	);
 
 endmodule 
-
-

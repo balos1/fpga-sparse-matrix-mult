@@ -149,7 +149,6 @@ logic [7:0] shiftout;
 // determine outputs
 always_ff @(posedge clk or negedge resetn) begin
 	if (!resetn) begin
-		curState <= IDLE;
 		tx_start <= 0;
 		tx_byte <= 0;
 		tx_complete <= 0;
@@ -165,11 +164,11 @@ always_ff @(posedge clk or negedge resetn) begin
 			tx_start <= 0;
 			tx_complete <= 0;
 			rx_complete <= 0;
-			rx_data <= {(`DATA_WIDTH){1'b0}};
+			// rx_data <= {(`DATA_WIDTH){1'b0}};
 			busy <= (tx_ready == 0);
-			rx_values_buffer <= {(16*MATRIX_N){1'b0}};
-			rx_indices_buffer <= {(16*MATRIX_N){1'b0}};
-			size_of <= {(HEADER*8){1'b0}};
+			// rx_values_buffer <= {(16*MATRIX_N){1'b0}};
+			// rx_indices_buffer <= {(16*MATRIX_N){1'b0}};
+			// size_of <= {(HEADER*8){1'b0}};
 		end
 		READHEADER: begin
 			size_of <= {size_of, rx_byte};
@@ -196,7 +195,7 @@ always_ff @(posedge clk or negedge resetn) begin
 		end
 		WRITELOAD: begin
 			size_of <= tx_data[`DATA_WIDTH-1 -: 8*HEADER];
-			le_tx_data <= {<< 8{tx_data}};
+			le_tx_data <= tx_data;
 			// shiftout <= 
 			//tx_byte <= shiftout;
 			tx_start <= 1;

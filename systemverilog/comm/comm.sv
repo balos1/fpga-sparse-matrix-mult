@@ -3,6 +3,7 @@
 // 50000000/divisor = BAUDRATE
 `define B10Mhz 5
 `define B115200 434
+`define B50Hz 1000000
 
 /*
 	module: comm
@@ -29,7 +30,8 @@ module comm #(
 `ifdef SIMULATION
 	parameter BAUDRATE = `B10Mhz,
 `else
-	parameter BAUDRATE = `B115200,
+	// parameter BAUDRATE = `B115200,
+	parameter BAUDRATE = `B50Hz;
 `endif
 	parameter MATRIX_N = 4
 )(
@@ -65,24 +67,13 @@ module comm #(
 		.rx_byte(rx_byte),
 		.rx_complete(rx_complete),
 		.rx_data(rx_data),
-		.tx_data(tx_data),
+		.tx_data(rx_data2),
 		.tx_ready(tx_ready),
 		.tx_byte(tx_byte),
 		.tx_start(tx_start),
 		.tx_complete(tx_complete),
 		.busy(busy)
 	);
-
-	// memory mainmem
-	// (
-	// 	.clk(clk),
-	// 	.resetn(resetn),
-	// 	.wen(ready_for_mem),
-	// 	.writePtr(writePtr),
-	// 	.readPtr(readPtr),
-	// 	.inData(wdata),
-	// 	.outData(rdata)
-	// );
 
 	async_rx #(.BAUDRATE(BAUDRATE)) RX0
 	(

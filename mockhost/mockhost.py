@@ -16,8 +16,8 @@ import time
 from threading import Thread
 
 PORT = 'loop://'
-WINPORT = '\\.\COM1'
-TIMEOUT = 100
+WINPORT = 'COM1'
+TIMEOUT = None
 
 # ser = serial.serial_for_url(PORT, timeout=TIMEOUT)
 
@@ -29,7 +29,7 @@ def main():
         help='size of matrices to generate (must be NxN)')
     parser.add_argument('-n', '--num-problems', action='store', default=1,
         help='the number of problems to generate and send')
-    parser.add_argument('-p', '--port', action='store', default=PORT,
+    parser.add_argument('-p', '--port', action='store', default=WINPORT,
         help='port to connect to')
     parser.add_argument('-t', '--timeout', action='store', default=TIMEOUT,
         help='timeout for serial comm')
@@ -49,8 +49,11 @@ def write_and_wait(uart, matricesA, matricesB):
     """Write to coprocessor and wait for result
     """
     for (A, B) in zip(matricesA, matricesB):
+        time.sleep(5)
         uart.send_matrices(A, B)
-        results = uart.recv_matrices()
+        uart.recv()
+        # results = uart.recv_matrices(3)
+        # print(results)
 
 
 def test_using_loopback(uart, matricesA, matricesB):
@@ -82,7 +85,8 @@ class CommUnit(object):
 
     def __init__(self, ser):
         self.ser = ser
-        self.ser.baudrate = 115200
+        # self.ser.baudrate = 115200
+        self.ser.baudrate = 50
         self.ser.parity = serial.PARITY_NONE
         self.ser.bytesize = serial.EIGHTBITS
         self.ser.stopbits = serial.STOPBITS_ONE
@@ -115,8 +119,14 @@ class CommUnit(object):
             recv_buffer.extend(size_of)
             recv_buffer.extend(values)
             recv_buffer.extend(indices)
-        print(recv_buffer)
         return recv_buffer
+
+    def recv(self):
+        try:
+            while True:
+                print(self.ser.read())
+        except KeyboardInterrupt:
+            pass
 
     def send_A(self, A):
         """Send matrix A in CSR format

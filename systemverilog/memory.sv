@@ -10,28 +10,72 @@
 		reset - async active high reset signal which clears memory
 */
 module memory(
-	input logic clk, reset, wen,
-	input logic [15:0] writePtr, readPtr,
-	input logic [7:0] inData,
-	output logic [63:0] outData
+	input logic clk, resetn, wen, ren,
+	input logic [135:0] inData,
+	output logic [135:0] outData
 );
 	parameter entries = 64;
 
-	logic [entries-1:0] ram [15:0];
+	// typedef enum logic [1:0]  { 
+	// 	IDLE, WRITE, READ
+	// } State;
 
-	always_ff @(posedge clk or posedge reset) begin
-		if (reset) begin
+	// State current_state;
+	// State next_state;
+
+	logic [5:0] writePtr, readPtr;
+
+	logic [135:0] ram [entries-1:0];
+
+	// always_comb begin
+	// 	case(current_state) begin
+	// 		IDLE: begin
+	// 			if (wen)
+	// 				next_state = WRITE;
+	// 			else if (ren)
+	// 				next_state = READ;
+	// 			else 
+	// 				next_state = IDLE;
+	// 		end
+	// 		WRITE: begin
+	// 			if (wen)
+	// 				next_state = WRITE;
+	// 			else 
+	// 				next_state = IDLE;
+	// 		end
+	// 		READ: begin
+	// 			if (ren)
+	// 				next_state = READ;
+	// 			else 
+	// 				next_state = IDLE;
+	// 		end
+	// 		default: next_state = IDLE; 
+	// 	end
+	// end
+
+	always_ff @(posedge clk or negedge resetn) begin
+		if (!resetn) begin
+			writePtr <= 0; readPtr <= 0;
 			for (int i = 0; i < entries; i++)
-				ram[i] = 128'b0;
-		end
-		if(wen) begin
-			ram[writePtr] <= {ram[writePtr], inData};
-			outData <= {ram[writePtr], inData};
-		end
-		else begin
+				ram[i] = {i, {104{1'b0}}};
+		end else if(wen) begin
+			ram[writePtr] <= inData;
+			outData <= ram[writePtr];
+			writePtr++;
+		end else if (ren) begin
+			readPtr++;
+		end else begin
 			outData <= ram[readPtr];
 		end
 	end
+
+	// always_ff @(posedge clk or negedge resetn) begin
+	// 	if (!resetn) begin
+	// 		current_state <= IDLE;
+	// 	end else begin
+	// 		current_state <= next_state;
+	// 	end
+	// end
 
 endmodule
 

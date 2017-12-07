@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<pin_planner>
+	<pin_info>
+		<pin name="rx" source="Pin Planner" >
+		</pin>
+		<pin name="rx_complete" source="Pin Planner" >
+		</pin>
+		<pin name="tx" source="Pin Planner" >
+		</pin>
+		<pin name="tx_complete" source="Pin Planner" >
+		</pin>
+		<pin name="regtxdata[7]" source="Pin Planner" >
+		</pin>
+		<pin name="regtxdata[6]" source="Pin Planner" >
+		</pin>
+		<pin name="regtxdata[5]" source="Pin Planner" >
+		</pin>
+		<pin name="regtxdata[4]" source="Pin Planner" >
+		</pin>
+		<pin name="regtxdata[3]" source="Pin Planner" >
+		</pin>
+		<pin name="regtxdata[2]" source="Pin Planner" >
+		</pin>
+		<pin name="regtxdata[1]" source="Pin Planner" >
+		</pin>
+		<pin name="regtxdata[0]" source="Pin Planner" >
+		</pin>
+	</pin_info>
+	<buses>
+	</buses>
+	<group_file_association>
+	</group_file_association>
+	<pin_planner_file_specifies>
+	</pin_planner_file_specifies>
+</pin_planner>
