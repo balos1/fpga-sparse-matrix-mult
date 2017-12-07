@@ -58,20 +58,25 @@ module test_comm_unit();
         rx = 1'b1; // stop bit
     endtask
 
-    //
+    logic rx_ready = 1'b0;
+    logic [7:0] rx_byte = 8'b0;
+
     logic startbit, stopbit;
     logic [135:0] tx_buffer = 135'b0;
     task device2host();
-        @(negedge baudclk);
-        @(negedge baudclk);
-        startbit = tx; // start bit
-        repeat (8) begin
-            @(negedge baudclk);
-            tx_buffer = {tx_buffer, tx};
-        end
-        @(negedge baudclk);
-        stopbit = tx; // stop bit
+        // @(negedge baudclk);
+        @(posedge rx_ready);
+        tx_buffer = {tx_buffer, rx_byte};
     endtask
+
+	async_rx #(.BAUDRATE(5)) RX
+	(
+		.clk(clk),
+		.rstn(resetn),
+		.rx(tx),
+		.rcv(rx_ready),
+		.data(rx_byte)
+	);
 
     // task for testing comm unit load functionality
     // size_of_A is the size (in bytes) of row values + row indices in matrix A
@@ -132,8 +137,9 @@ module test_comm_unit();
             while (busy) #1;
             tx_data = {size_of_A[i], A[i], A0[i]};
             op = 1'b1;
-            while (!tx_complete)
+            while (!tx_complete) begin
                 #1 device2host();
+            end
         end
 
         while (busy) #1;

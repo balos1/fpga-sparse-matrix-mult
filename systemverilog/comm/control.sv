@@ -143,6 +143,9 @@ always_comb begin
 	end
 end
 
+logic [135:0] le_tx_data;
+logic [7:0] shiftout;
+
 // determine outputs
 always_ff @(posedge clk or negedge resetn) begin
 	if (!resetn) begin
@@ -193,13 +196,15 @@ always_ff @(posedge clk or negedge resetn) begin
 		end
 		WRITELOAD: begin
 			size_of <= tx_data[`DATA_WIDTH-1 -: 8*HEADER];
-			tx_byte <= (tx_data[`DATA_WIDTH-1 -: 8] << byte_count);
+			le_tx_data <= {<< 8{tx_data}};
+			// shiftout <= 
+			//tx_byte <= shiftout;
 			tx_start <= 1;
 			busy <= 1;
 		end
 		WRITEHOLD: begin
 			size_of <= size_of;
-			tx_byte <= tx_byte;
+			tx_byte <= le_tx_data[byte_count*8 +: 8];
 			tx_start <= tx_start;
 			busy <= 1;
 		end

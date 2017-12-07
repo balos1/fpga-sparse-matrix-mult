@@ -69,27 +69,11 @@ def test_using_loopback(uart, matricesA, matricesB):
 def test_send(uart):
     """Pretend to be the coprocessor in a receiver state.
     """
-    uart.ser.rts = True
-    time.sleep(0.1)
-
-    data = b''
-    recv_buffer = bytearray()
-    while b'\r' not in data:
-        data = uart.ser.read()
-        recv_buffer.extend(data)
+    uart.recv_matrices(3)
     print('received matrix A')
-    print(recv_buffer)
-
-    uart.ser.rts = True
     time.sleep(0.1)
-
-    data = b''
-    recv_buffer = bytearray()
-    while b'\r' not in data:
-        data = uart.ser.read()
-        recv_buffer.extend(data)
+    uart.recv_matrices(3)
     print('received matrix B')
-    print(recv_buffer)
 
 
 class CommUnit(object):
@@ -102,37 +86,36 @@ class CommUnit(object):
         self.ser.parity = serial.PARITY_NONE
         self.ser.bytesize = serial.EIGHTBITS
         self.ser.stopbits = serial.STOPBITS_ONE
-        self.ser.rtscts = True
+        self.ser.rtscts = False
 
     def send_matrices(self, A, B):
         """
         Sends two matrices over UART
         """
         # wait until we can send A
-        while not self.ser.cts:
-            time.sleep(0.1)
+        # while not self.ser.cts:
+        #     time.sleep(0.1)
         self.send_A(A)
         # wait until we can send B
-        while not self.ser.cts:
-            time.sleep(0.1)
+        # while not self.ser.cts:
+        #     time.sleep(0.1)
         self.send_B(B)
 
-    def recv_matrices(self):
+    def recv_matrices(self, N):
         """Waits to receive data
         """
-        data = None
-
-        # wait for data to start
-        while True:
-            data = self.ser.read()
-            if bytes(0) not in data:
-                break
-
         recv_buffer = bytearray()
-        recv_buffer.extend(data)
-        while bytes(0) not in data:
-            recv_buffer.extend(data)
-
+        for n in range(N):
+            print('waiting to receive')
+            size_of = self.ser.read()  # wait for first byte which is the size of each row in bytes
+            num_bytes = ord(size_of)
+            values = self.ser.read(num_bytes) # read N rows which are size_of bytes + indices
+            print('receiving matrix with %d byte rows' % num_bytes)
+            indices = self.ser.read(num_bytes)
+            recv_buffer.extend(size_of)
+            recv_buffer.extend(values)
+            recv_buffer.extend(indices)
+        print(recv_buffer)
         return recv_buffer
 
     def send_A(self, A):
@@ -143,22 +126,23 @@ class CommUnit(object):
 
         hr_buffer = []
         for vector in vectors:
-            for index, value in zip(vector.indices, vector.data):
+            # first send number of number of bytes in a row
+            hr_buffer.append(len(vector.data)*2)
+            for value in vector.data:
                 hr_buffer.append(value)
+            for index in vector.indices:
                 hr_buffer.append(index)
-            hr_buffer.append('\n')
-        hr_buffer.append('\r')
 
         send_buffer = bytearray()
         for vector in vectors:
             # need to send everything LSB first, so pack it in little endian order
-            for index, value in zip(vector.indices, vector.data):
+            send_buffer.append(len(vector.data)*2)
+            for value in vector.data:
                 # values are send as half-precision floats (16 bits)
                 send_buffer.extend(struct.pack('<e', value))
+            for index in vector.indices:
                 # indices will be sent as unsigned shorts (16 bits)
                 send_buffer.extend(struct.pack('<H', index))
-            send_buffer.extend(b'\n')
-        send_buffer.extend(b'\r')
 
         print('sending matrix A')
         print(hr_buffer)
@@ -172,23 +156,24 @@ class CommUnit(object):
         vectors = [sparse.csr_matrix(col, dtype=np.float16).sorted_indices() for col in B.T]
 
         hr_buffer = []
-        for vector in np.transpose(vectors):
-            for index, value in zip(vector.indices, vector.data):
+        for vector in vectors:
+            # first send number of number of bytes in a row
+            hr_buffer.append(len(vector.data)*2)
+            for value in vector.data:
                 hr_buffer.append(value)
+            for index in vector.indices:
                 hr_buffer.append(index)
-            hr_buffer.append('\n')
-        hr_buffer.append('\r')
 
         send_buffer = bytearray()
         for vector in vectors:
             # need to send everything LSB first, so pack it in little endian order
-            for index, value in zip(vector.indices, vector.data):
+            send_buffer.append(len(vector.data)*2)
+            for value in vector.data:
                 # values are send as half-precision floats (16 bits)
                 send_buffer.extend(struct.pack('<e', value))
+            for index in vector.indices:
                 # indices will be sent as unsigned shorts (16 bits)
                 send_buffer.extend(struct.pack('<H', index))
-            send_buffer.extend(b'\n')
-        send_buffer.extend(b'\r')
 
         print('sending matrix B')
         print(hr_buffer)
