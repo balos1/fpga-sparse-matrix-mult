@@ -1,6 +1,6 @@
 module bramControl(input logic clk, ready, rw, reset,
-					output logic [1:0] bramWritePtr,
-					output logic wen);
+						      output logic [1:0] bramWritePtr,
+						      output logic wen);
 
 	typedef enum logic {idle, write} State;
 	State curState=idle;

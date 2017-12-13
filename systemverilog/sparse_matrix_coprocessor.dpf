@@ -4,11 +4,7 @@
 	<pin_info>
 		<pin name="rx" source="Pin Planner" >
 		</pin>
-		<pin name="rx_complete" source="Pin Planner" >
-		</pin>
 		<pin name="tx" source="Pin Planner" >
-		</pin>
-		<pin name="tx_complete" source="Pin Planner" >
 		</pin>
 		<pin name="regtxdata[7]" source="Pin Planner" >
 		</pin>

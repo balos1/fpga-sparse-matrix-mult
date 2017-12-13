@@ -13,7 +13,6 @@ module bram(input logic clk, rw, indexReady,
 	    output logic [15:0] indexOut
 				//output logic [63:0] indices
 );
-
 integer size;
 logic [63:0] data;
 logic [15:0] ram;
@@ -22,13 +21,14 @@ always_ff @(posedge clk) begin
 	if(indexReady) data <= indices;
 end
 
+
 always_ff @(posedge clk) begin
 	if(rw) begin
 		ram <= data[(writePtr*16)+:16];
 	end
-	else
+	else begin
 		indexOut <= ram;
-
+	end
 end
-endmodule
 
+endmodule

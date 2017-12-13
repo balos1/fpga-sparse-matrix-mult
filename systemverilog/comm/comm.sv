@@ -12,7 +12,7 @@
 
 	inputs:
 		clk
-		resetn ------ async active low reset that resets tx and rx units, control, and main memory
+		resetn ----- async active low reset that resets tx and rx units, control, and main memory
 		op --------- indicates if comm unit should be receiving or transmitting
 		rx --------- the serial receive line
 		tx_start --- start transmission (1)
@@ -62,12 +62,11 @@ module comm #(
 		.clk(clk),
 		.resetn(resetn),
 		.op(op),
-		.start(start),
 		.rx_ready(rx_ready),
 		.rx_byte(rx_byte),
 		.rx_complete(rx_complete),
 		.rx_data(rx_data),
-		.tx_data(rx_data2),
+		.tx_data(tx_data),
 		.tx_ready(tx_ready),
 		.tx_byte(tx_byte),
 		.tx_start(tx_start),
