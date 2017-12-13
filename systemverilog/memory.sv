@@ -16,7 +16,7 @@ module memory(
 );
 	parameter entries = 64;
 
-	// typedef enum logic [1:0]  { 
+	// typedef enum logic [1:0]  {
 	// 	IDLE, WRITE, READ
 	// } State;
 
@@ -34,22 +34,22 @@ module memory(
 	// 				next_state = WRITE;
 	// 			else if (ren)
 	// 				next_state = READ;
-	// 			else 
+	// 			else
 	// 				next_state = IDLE;
 	// 		end
 	// 		WRITE: begin
 	// 			if (wen)
 	// 				next_state = WRITE;
-	// 			else 
+	// 			else
 	// 				next_state = IDLE;
 	// 		end
 	// 		READ: begin
 	// 			if (ren)
 	// 				next_state = READ;
-	// 			else 
+	// 			else
 	// 				next_state = IDLE;
 	// 		end
-	// 		default: next_state = IDLE; 
+	// 		default: next_state = IDLE;
 	// 	end
 	// end
 

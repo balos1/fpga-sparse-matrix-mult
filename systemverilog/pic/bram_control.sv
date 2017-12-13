@@ -1,20 +1,20 @@
 module bramControl(input logic clk, ready, rw, reset,
-						      output logic [1:0] bramWritePtr,
-						      output logic wen);
+					output logic [1:0] bramWritePtr,
+					output logic wen);
 
 	typedef enum logic {idle, write} State;
-	State curState=idle; 
+	State curState=idle;
 	State nextState;
-	
+
 	integer writeCounter = 0;
-	
+
 	always_ff @(posedge clk) begin
 	if(reset)
 		curState <= idle;
 	else
 		curState <= nextState;
 	end
-	
+
 	always_comb begin
 		case(curState)
 				idle:	begin
@@ -28,13 +28,13 @@ module bramControl(input logic clk, ready, rw, reset,
 						nextState = write;
 					else
 						nextState = idle;
-				
+
 				default:
 					nextState = idle;
-		endcase	
+		endcase
 	end
-	
-		
+
+
 	always_ff @(posedge clk) begin
 		case(curState)
 				idle: begin
@@ -47,7 +47,7 @@ module bramControl(input logic clk, ready, rw, reset,
 					end
 		endcase
 	end
-	
+
 	assign wen = (curState == write);
 
 endmodule

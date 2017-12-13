@@ -4,7 +4,7 @@ module sparse_matrix_coprocessor
 	input logic resetn, op, fpu_complete,
 	input logic RxD,
 	output logic TxD,
-	output logic [135:0] tx_data, 
+	output logic [135:0] tx_data,
 	output logic busy
 );
 
@@ -13,7 +13,7 @@ module sparse_matrix_coprocessor
 	comm c
 	(
 		.clk(clk),
-		.resetn(resetn), 
+		.resetn(resetn),
 		.op(op),
 		.start(),
 		.rx(RxD),
@@ -22,7 +22,6 @@ module sparse_matrix_coprocessor
 		.tx_complete(tx_complete),
 		.rx_complete(rx_complete),
 		.rx_data(rx_data),
-		.regtxdata(),
 		.busy(busy)
 	);
 
@@ -43,4 +42,4 @@ module sparse_matrix_coprocessor
 		.q(ren_clk)
 	);
 
-endmodule 
+endmodule
