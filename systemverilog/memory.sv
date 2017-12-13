@@ -56,8 +56,9 @@ module memory(
 	always_ff @(posedge clk or negedge resetn) begin
 		if (!resetn) begin
 			writePtr <= 0; readPtr <= 0;
-			for (int i = 0; i < entries; i++)
-				ram[i] = {i, {104{1'b0}}};
+			for (int i = entries-1; i >= 0; i--)
+				ram[i] = {i[7:0], {129{1'b0}}};
+			outData <= ram[readPtr];
 		end else if(wen) begin
 			ram[writePtr] <= inData;
 			outData <= ram[writePtr];

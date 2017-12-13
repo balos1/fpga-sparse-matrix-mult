@@ -7,46 +7,46 @@ vmap work rtl_work
 ### ---------------------------------------------- ###
 ### Compile code ###
 ### Enter files here; copy line for multiple files ###
-vlog -sv -work work [pwd]/testPIC.sv
-vlog -sv -work work -suppress 7061 [pwd]/PIC.sv
-vlog -sv -work work -suppress 7061 [pwd]/fifo.sv
-vlog -sv -work work [pwd]/controlPIC.sv
-vlog -sv -work work [pwd]/compare.sv
-
+vlog -sv -work work test_system.sv
+vlog -sv -work work +define+SIMULATION ../comm/comm.sv
+vlog -sv -work work +define+SIMULATION ../comm/control.sv
+vlog -sv -work work +define+SIMULATION ../comm/tx/async_tx.sv
+vlog -sv -work work +define+SIMULATION ../comm/tx/baudtick_tx.sv
+vlog -sv -work work +define+SIMULATION ../comm/rx/async_rx.sv
+vlog -sv -work work +define+SIMULATION ../comm/rx/baudtick_rx.sv
+vlog -sv -work work +define+SIMULATION ../memory.sv
+vlog -sv -work work +define+SIMULATION ../sparse_matrix_coprocessor.sv
+vlog -sv -work work +define+SIMULATION ../fall_detect.sv
 ### ---------------------------------------------- ###
 ### Load design for simulation ###
 ### Replace topLevelModule with the name of your top level module (no .sv) ###
 ### Do not duplicate! ###
-vsim testPIC
+vsim test_system
 
 ### ---------------------------------------------- ###
 ### Add waves here ###
 ### Use add wave * to see all signals ###
 add wave *
-add wave dutPIC/m3/fifo
-add wave dutPIC/m1/eq
-add wave dutPIC/m1/dataOut
-add wave dutPIC/m2/currentState
-add wave dutPIC/m2/nextState
-add wave dutPIC/m2/waddr
-add wave dutPIC/m2/raddr
+add wave dut/c/ctl/*
+add wave dut/mainmem/*
+add wave dut/mainmem/ram
 
 ### Force waves here ###
 
 ### ---------------------------------------------- ###
 ### Run simulation ###
 ### Do not modify ###
-# to see your design hierarchy and signals 
-view structure 
+# to see your design hierarchy and signals
+view structure
 
 # to see all signal names and current values
-view signals 
+view signals
 
 ### ---------------------------------------------- ###
 ### Edit run time ###
-run 3000 ns     
+run 1 20us
 
 ### ---------------------------------------------- ###
 ### Will create large wave window and zoom to show all signals
 view -undock wave
-wave zoomfull 
+wave zoomfull

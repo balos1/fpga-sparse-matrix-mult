@@ -3,26 +3,25 @@ module sparse_matrix_coprocessor
 	input logic clk,
 	input logic resetn, op, fpu_complete,
 	input logic RxD,
-	output logic TxD,
+	output logic TxD, 
 	output logic [135:0] tx_data, 
-	output logic busy
+	output logic busy, tx_complete, rx_complete
 );
 
 	logic ren_clk;
+	logic [135:0] rx_data;
 
 	comm c
 	(
 		.clk(clk),
 		.resetn(resetn), 
 		.op(op),
-		.start(),
 		.rx(RxD),
 		.tx_data(tx_data),
 		.tx(TxD),
 		.tx_complete(tx_complete),
 		.rx_complete(rx_complete),
 		.rx_data(rx_data),
-		.regtxdata(),
 		.busy(busy)
 	);
 
@@ -36,7 +35,7 @@ module sparse_matrix_coprocessor
 		.outData(tx_data)
 	);
 
-	fall_detect
+	fall_detect falldetect
 	(
 		.clk(clk),
 		.d(fpu_complete),

@@ -30,7 +30,6 @@ module comm_controller #(
 	input logic clk,
 	input logic resetn,
 	input logic op,
-	input logic start,
 	input logic rx_ready,
 	input logic [7:0] rx_byte,
 	input logic [`DATA_WIDTH-1:0] tx_data,
@@ -144,7 +143,6 @@ always_comb begin
 end
 
 logic [135:0] le_tx_data;
-logic [7:0] shiftout;
 
 // determine outputs
 always_ff @(posedge clk or negedge resetn) begin
@@ -158,6 +156,8 @@ always_ff @(posedge clk or negedge resetn) begin
 		rx_values_buffer <= {(16*MATRIX_N){1'b0}};
 		rx_indices_buffer <= {(16*MATRIX_N){1'b0}};
 		size_of <= {(HEADER*8){1'b0}};
+		le_tx_data <= {(`DATA_WIDTH){1'b0}};
+
 	end else begin
 	case(curState)
 		IDLE: begin
@@ -196,8 +196,6 @@ always_ff @(posedge clk or negedge resetn) begin
 		WRITELOAD: begin
 			size_of <= tx_data[`DATA_WIDTH-1 -: 8*HEADER];
 			le_tx_data <= tx_data;
-			// shiftout <= 
-			//tx_byte <= shiftout;
 			tx_start <= 1;
 			busy <= 1;
 		end
@@ -216,14 +214,14 @@ always_ff @(posedge clk or negedge resetn) begin
 			busy <= 1;
 		end
 		default: begin
-			tx_start <= 0;
-			tx_complete <= 0;
-			rx_complete <= 0;
-			rx_data <= {(`DATA_WIDTH){1'b0}};
-			busy <= (tx_ready == 0);
-			rx_values_buffer <= {(16*MATRIX_N){1'b0}};
-			rx_indices_buffer <= {(16*MATRIX_N){1'b0}};
-			size_of <= {(HEADER*8){1'b0}};
+			// tx_start <= 0;
+			// tx_complete <= 0;
+			// rx_complete <= 0;
+			// rx_data <= {(`DATA_WIDTH){1'b0}};
+			// busy <= (tx_ready == 0);
+			// rx_values_buffer <= {(16*MATRIX_N){1'b0}};
+			// rx_indices_buffer <= {(16*MATRIX_N){1'b0}};
+			// size_of <= {(HEADER*8){1'b0}};
 		end
 	endcase
 	end

@@ -26,9 +26,9 @@ always_ff @(posedge clk) begin
 	if(rw) begin
 		ram <= data[(writePtr*16)+:16];
 	end
-	else
-		indexOut <= ram;
-	
+	else begin
+		indexOut <= ram;	
+	end
 end
-endmodule
 
+endmodule

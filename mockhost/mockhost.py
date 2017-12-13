@@ -71,9 +71,9 @@ def write_and_wait(uart, A, B):
     # for (A, B) in zip(matricesA, matricesB):
     time.sleep(5)
     uart.send_matrices(A, B)
-    uart.recv()
-    # results = uart.recv_matrices(4)
-    # print(results)
+    #uart.recv()
+    results = uart.recv_matrices(4)
+    print(results)
 
 
 def test_using_loopback(uart, matricesA, matricesB):
@@ -85,12 +85,13 @@ def test_using_loopback(uart, matricesA, matricesB):
         print(A)
         print(B)
         thread1 = Thread(target=uart.send_matrices, args=(A,B))
-        thread2 = Thread(target=test_send, args=(uart,C))
+        thread2 = Thread(target=test_send, args=(uart,A))
         thread1.start()
         thread2.start()
         thread1.join()
         thread2.join()
         time.sleep(1)
+
 
 def test_send(uart, exp_result):
     """Pretend to be the coprocessor in a receiver state.
@@ -109,8 +110,8 @@ class CommUnit(object):
 
     def __init__(self, ser):
         self.ser = ser
-        self.ser.baudrate = 115200
-        # self.ser.baudrate = 50
+        # self.ser.baudrate = 115200
+        self.ser.baudrate = 50
         self.ser.parity = serial.PARITY_NONE
         self.ser.bytesize = serial.EIGHTBITS
         self.ser.stopbits = serial.STOPBITS_ONE

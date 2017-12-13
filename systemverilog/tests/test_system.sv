@@ -8,7 +8,7 @@
 
 // 50000000/divisor = BAUDRATE
 
-module test_comm_unit();
+module test_system();
     parameter clkperiod = 20;  // 50 MHz
     parameter baudperiod = 100; // 10 MHz
 
@@ -25,20 +25,30 @@ module test_comm_unit();
     logic rx_complete = 1'b0;
     logic [(8+2*16*4-1):0] rx_data = {(8+2*16*4-1){1'b0}};
     logic busy = 1'b0;
+    logic fpu_complete = 1'b1;
 
-    comm dut
+    /*
+    (
+	input logic clk,
+	input logic resetn, op, fpu_complete,
+	input logic RxD,
+	output logic TxD, 
+	output logic [135:0] tx_data, 
+	output logic busy, tx_complete, rx_complete
+);
+*/
+    sparse_matrix_coprocessor dut
     (
         .clk(clk),
         .resetn(resetn),
         .op(op),
-        .start(start),
-        .rx(rx),
+        .fpu_complete(fpu_complete),
+        .RxD(rx),
         .tx_data(tx_data),
-        .tx(tx),
+        .TxD(tx),
+        .busy(busy),
         .tx_complete(tx_complete),
-        .rx_complete(rx_complete),
-        .rx_data(rx_data),
-        .busy(busy)
+        .rx_complete(rx_complete)
     );
 
 
@@ -61,7 +71,8 @@ module test_comm_unit();
     logic rx_ready = 1'b0;
     logic [7:0] rx_byte = 8'b0;
 
-    logic startbit, stopbit;
+    logic startbit = 1'b0;
+    logic stopbit = 1'b0;
     logic [135:0] tx_buffer = 135'b0;
     task device2host();
         // @(negedge baudclk);
@@ -167,27 +178,27 @@ module test_comm_unit();
         // host2device(8'h74);
         // host2device(8'hFB);
 
-        // test_load
-        // (
-        //     {4, 4, 4, 4},
-        //     {{32'h74FB7BFE, 32'h0},  // 20400.0, 65472.0
-        //      {32'h74FB7BFE, 32'h0},  // 20400.0, 65472.0
-        //      {32'h74FB7BFE, 32'h0},  // 20400.0, 65472.0
-        //      {32'h74FB7BFE, 32'h0}}, // 20400.0, 65472.0
-        //     {{16'd0, 16'd3, 32'h0},
-        //      {16'd0, 16'd3, 32'h0},
-        //      {16'd0, 16'd3, 32'h0},
-        //      {16'd0, 16'd3, 32'h0}},
-        //     {4, 4, 4, 4},
-        //     {{16'hE850, 48'h0},     // -2208.0
-        //      {16'hE850, 48'h0},     // -2208.0
-        //      {16'hE850, 48'h0},     // -2208.0
-        //      {16'hE850, 48'h0}},    // -2208.0
-        //     {{16'b1, 48'h0},
-        //      {16'b1, 48'h0},
-        //      {16'b1, 48'h0},
-        //      {16'b1, 48'h0}}
-        // );
+        test_load
+        (
+            {4, 4, 4, 4},
+            {{32'h74FB7BFE, 32'h0},  // 20400.0, 65472.0
+             {32'h74FB7BFE, 32'h0},  // 20400.0, 65472.0
+             {32'h74FB7BFE, 32'h0},  // 20400.0, 65472.0
+             {32'h74FB7BFE, 32'h0}}, // 20400.0, 65472.0
+            {{16'd0, 16'd3, 32'h0},
+             {16'd0, 16'd3, 32'h0},
+             {16'd0, 16'd3, 32'h0},
+             {16'd0, 16'd3, 32'h0}},
+            {4, 4, 4, 4},
+            {{16'hE850, 48'h0},     // -2208.0
+             {16'hE850, 48'h0},     // -2208.0
+             {16'hE850, 48'h0},     // -2208.0
+             {16'hE850, 48'h0}},    // -2208.0
+            {{16'b1, 48'h0},
+             {16'b1, 48'h0},
+             {16'b1, 48'h0},
+             {16'b1, 48'h0}}
+        );
 
         // test_load
         // (
