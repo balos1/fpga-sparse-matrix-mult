@@ -25,31 +25,30 @@ vsim test_comm_unit
 ### Add waves here ###
 ### Use add wave * to see all signals ###
 add wave *
-add wave clk
-add wave baudclk
-add wave resetn
-add wave rx
-add wave rx_complete
-add wave -radix hex rx_data
-add wave tx
-add wave tx_complete
-add wave -radix hex tx_data
+# add wave clk
+# add wave baudclk
+# add wave resetn
+# add wave rx
+# add wave rx_complete
+# add wave -radix hex rx_data
+# add wave tx
+# add wave tx_complete
+# add wave -radix hex tx_data
 #add wave busy
 #add wave dut/*
 #add wave dut/TX0/*
-add wave dut/ctl/curState
+#add wave dut/ctl/curState
 #add wave dut/ctl/nextState
 #add wave -radix bin dut/ctl/rx_ready
 #add wave -radix hex dut/ctl/rx_byte
 #add wave -radix hex dut/ctl/rx_values_buffer
 #add wave -radix hex dut/ctl/rx_indices_buffer
-add wave -radix bin dut/ctl/tx_ready
-add wave -radix hex dut/ctl/tx_byte
-add wave dut/ctl/shiftout
+# add wave -radix bin dut/ctl/tx_ready
+# add wave -radix hex dut/ctl/tx_byte
+# add wave dut/ctl/shiftout
 add wave -radix hex tx_buffer
 add wave -radix dec dut/ctl/size_of
 add wave dut/ctl/byte_count
-#add wave -radix hex -label main_memory {dut/mainmem/ram}
 
 ### Force waves here ###
 

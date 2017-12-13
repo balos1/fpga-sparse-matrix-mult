@@ -1,6 +1,5 @@
 /*
     file: adder.sv
-    author: Cody Balos <cjbalos@gmail.com>
 */
 
 `define neg 15

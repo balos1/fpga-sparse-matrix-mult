@@ -1,6 +1,5 @@
 /*
     file: mult.sv
-    author: Cody Balos <cjbalos@gmail.com>
 */
 
 `define sign 15
