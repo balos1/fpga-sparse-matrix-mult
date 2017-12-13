@@ -1,0 +1,1 @@
+This is "demo" folder is a subsystem prototype of the matrix multiplication portion of the entire project.
